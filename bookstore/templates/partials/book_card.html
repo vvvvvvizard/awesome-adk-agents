@@ -1,0 +1,54 @@
+<div class="group bg-white rounded-xl shadow-sm hover:shadow-md transition-all overflow-hidden border border-stone-100 flex flex-col">
+  <a href="/books/{{ book.id }}" class="block relative overflow-hidden bg-stone-100 aspect-[2/3]">
+    <img src="{{ book.cover_image or 'https://via.placeholder.com/200x300/d4882a/fff?text=' + book.title[:12] }}"
+         alt="{{ book.title }}"
+         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+         onerror="this.src='https://via.placeholder.com/200x300/d4882a/fff?text=Book'" />
+    {% if book.bestseller %}
+    <span class="absolute top-2 left-2 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-0.5 rounded-full shadow-sm">Bestseller</span>
+    {% elif book.new_arrival %}
+    <span class="absolute top-2 left-2 bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-sm">New</span>
+    {% endif %}
+    {% if book.original_price and book.original_price > book.price %}
+    <span class="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-sm">
+      -{{ ((1 - book.price / book.original_price) * 100)|int }}%
+    </span>
+    {% endif %}
+    {% if book.stock == 0 %}
+    <div class="absolute inset-0 bg-black/50 flex items-center justify-center">
+      <span class="bg-white text-stone-800 text-xs font-bold px-3 py-1 rounded-full">Out of Stock</span>
+    </div>
+    {% endif %}
+  </a>
+  <div class="p-3 flex flex-col flex-1">
+    <div class="flex items-center gap-1 mb-1">
+      <div class="flex text-yellow-400">
+        {% for i in range(5) %}
+          {% if i < (book.rating|int) %}<span class="text-xs">★</span>
+          {% else %}<span class="text-xs text-stone-300">★</span>{% endif %}
+        {% endfor %}
+      </div>
+      <span class="text-xs text-stone-400">({{ book.review_count }})</span>
+    </div>
+    <a href="/books/{{ book.id }}" class="font-semibold text-stone-900 text-sm leading-snug hover:text-brand-700 transition-colors line-clamp-2 flex-1">{{ book.title }}</a>
+    <p class="text-xs text-stone-500 mt-0.5">{{ book.author }}</p>
+    <div class="flex items-center justify-between mt-2.5">
+      <div>
+        <span class="font-bold text-stone-900 text-sm">${{ "%.2f"|format(book.price) }}</span>
+        {% if book.original_price and book.original_price > book.price %}
+        <span class="text-xs text-stone-400 line-through ml-1">${{ "%.2f"|format(book.original_price) }}</span>
+        {% endif %}
+      </div>
+      {% if book.stock > 0 %}
+      <form action="/cart/add/{{ book.id }}" method="post">
+        <input type="hidden" name="quantity" value="1" />
+        <button type="submit" class="p-1.5 bg-brand-700 text-white rounded-lg hover:bg-brand-600 transition-colors shadow-sm" title="Add to cart">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"/>
+          </svg>
+        </button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+</div>

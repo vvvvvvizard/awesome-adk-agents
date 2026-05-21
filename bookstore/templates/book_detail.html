@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+{% block title %}{{ book.title }} — PageTurner{% endblock %}
+{% block content %}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+  <!-- Breadcrumb -->
+  <nav class="flex items-center gap-2 text-sm text-stone-500 mb-6">
+    <a href="/" class="hover:text-brand-700">Home</a>
+    <span>/</span>
+    <a href="/books" class="hover:text-brand-700">Books</a>
+    {% if book.category %}
+    <span>/</span>
+    <a href="/books?category={{ book.category.slug }}" class="hover:text-brand-700">{{ book.category.name }}</a>
+    {% endif %}
+    <span>/</span>
+    <span class="text-stone-800 line-clamp-1">{{ book.title }}</span>
+  </nav>
+
+  <!-- Book info grid -->
+  <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-10 mb-14">
+
+    <!-- Cover -->
+    <div class="md:col-span-1 flex flex-col items-center md:items-start gap-4">
+      <div class="w-56 md:w-full max-w-xs shadow-2xl rounded-xl overflow-hidden border border-stone-200">
+        <img src="{{ book.cover_image or 'https://via.placeholder.com/300x450/d4882a/fff?text=' + book.title[:10] }}"
+             alt="{{ book.title }}"
+             class="w-full"
+             onerror="this.src='https://via.placeholder.com/300x450/d4882a/fff?text=Book'" />
+      </div>
+      {% if book.stock > 0 %}
+      <div class="flex items-center gap-2 text-sm text-green-700 font-medium bg-green-50 px-3 py-1.5 rounded-lg border border-green-200 w-full max-w-xs justify-center">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4"><path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd" /></svg>
+        In Stock ({{ book.stock }} left)
+      </div>
+      {% else %}
+      <div class="flex items-center gap-2 text-sm text-red-700 font-medium bg-red-50 px-3 py-1.5 rounded-lg border border-red-200 w-full max-w-xs justify-center">
+        Out of Stock
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Details -->
+    <div class="md:col-span-2 lg:col-span-3">
+      {% if book.category %}
+      <span class="inline-block text-xs font-medium text-brand-700 bg-brand-50 px-3 py-1 rounded-full mb-3 border border-brand-200">{{ book.category.name }}</span>
+      {% endif %}
+      {% if book.bestseller %}
+      <span class="inline-block text-xs font-bold text-yellow-700 bg-yellow-50 px-3 py-1 rounded-full mb-3 border border-yellow-200 ml-2">🏆 Bestseller</span>
+      {% endif %}
+      {% if book.new_arrival %}
+      <span class="inline-block text-xs font-bold text-green-700 bg-green-50 px-3 py-1 rounded-full mb-3 border border-green-200 ml-2">✨ New Arrival</span>
+      {% endif %}
+
+      <h1 class="font-serif text-3xl md:text-4xl font-bold text-stone-900 leading-tight mb-2">{{ book.title }}</h1>
+      <p class="text-lg text-stone-600 mb-4">by <span class="font-semibold text-stone-800">{{ book.author }}</span></p>
+
+      <!-- Rating -->
+      <div class="flex items-center gap-3 mb-5">
+        <div class="flex text-yellow-400 text-xl">
+          {% for i in range(5) %}
+            {% if i < (book.rating|int) %}★{% else %}<span class="text-stone-300">★</span>{% endif %}
+          {% endfor %}
+        </div>
+        <span class="font-semibold text-stone-800">{{ "%.1f"|format(book.rating) }}</span>
+        <span class="text-stone-500 text-sm">({{ book.review_count }} reviews)</span>
+      </div>
+
+      <!-- Price -->
+      <div class="flex items-baseline gap-3 mb-6">
+        <span class="font-serif text-4xl font-bold text-stone-900">${{ "%.2f"|format(book.price) }}</span>
+        {% if book.original_price and book.original_price > book.price %}
+        <span class="text-xl text-stone-400 line-through">${{ "%.2f"|format(book.original_price) }}</span>
+        <span class="text-sm font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-full">Save {{ ((1 - book.price / book.original_price) * 100)|int }}%</span>
+        {% endif %}
+      </div>
+
+      <!-- Add to cart -->
+      {% if book.stock > 0 %}
+      <form action="/cart/add/{{ book.id }}" method="post" class="flex items-center gap-3 mb-6">
+        <div class="flex items-center border border-stone-300 rounded-xl overflow-hidden">
+          <button type="button" onclick="changeQty(-1)" class="px-4 py-3 text-stone-600 hover:bg-stone-100 transition-colors font-bold text-lg">−</button>
+          <input id="qty-input" type="number" name="quantity" value="1" min="1" max="{{ book.stock }}" class="w-16 text-center py-3 border-0 focus:outline-none text-sm font-semibold" />
+          <button type="button" onclick="changeQty(1)" class="px-4 py-3 text-stone-600 hover:bg-stone-100 transition-colors font-bold text-lg">+</button>
+        </div>
+        <button type="submit" class="flex-1 sm:flex-none px-8 py-3.5 bg-brand-700 text-white font-semibold rounded-xl hover:bg-brand-600 transition-all shadow-md hover:-translate-y-0.5 hover:shadow-lg flex items-center justify-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"/></svg>
+          Add to Cart
+        </button>
+      </form>
+      {% else %}
+      <button disabled class="px-8 py-3.5 bg-stone-200 text-stone-500 font-semibold rounded-xl cursor-not-allowed mb-6">Out of Stock</button>
+      {% endif %}
+
+      <!-- Shipping note -->
+      <div class="bg-stone-50 rounded-xl p-4 flex items-center gap-3 text-sm text-stone-600 mb-6">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-brand-600 flex-shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"/></svg>
+        Free shipping on this order if your total exceeds $35. Order today for fast delivery!
+      </div>
+
+      <!-- Book details table -->
+      <div class="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+        {% if book.publisher %}<div class="text-stone-500">Publisher</div><div class="font-medium text-stone-800">{{ book.publisher }}</div>{% endif %}
+        {% if book.published_date %}<div class="text-stone-500">Published</div><div class="font-medium text-stone-800">{{ book.published_date }}</div>{% endif %}
+        {% if book.pages %}<div class="text-stone-500">Pages</div><div class="font-medium text-stone-800">{{ book.pages }}</div>{% endif %}
+        {% if book.language %}<div class="text-stone-500">Language</div><div class="font-medium text-stone-800">{{ book.language }}</div>{% endif %}
+        {% if book.isbn %}<div class="text-stone-500">ISBN</div><div class="font-medium text-stone-800">{{ book.isbn }}</div>{% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Description -->
+  {% if book.description %}
+  <div class="bg-white rounded-xl border border-stone-200 p-6 mb-8">
+    <h2 class="font-serif text-xl font-bold text-stone-900 mb-3">About this Book</h2>
+    <p class="text-stone-700 leading-relaxed">{{ book.description }}</p>
+  </div>
+  {% endif %}
+
+  <!-- Reviews -->
+  <div class="bg-white rounded-xl border border-stone-200 p-6 mb-8">
+    <h2 class="font-serif text-xl font-bold text-stone-900 mb-5">Customer Reviews</h2>
+
+    {% if reviews %}
+    <div class="space-y-4 mb-8">
+      {% for review in reviews %}
+      <div class="border-b border-stone-100 pb-4 last:border-0">
+        <div class="flex items-start justify-between mb-1">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 font-bold text-sm">{{ review.user.name[0].upper() }}</div>
+            <span class="font-semibold text-sm text-stone-800">{{ review.user.name }}</span>
+          </div>
+          <div class="flex text-yellow-400 text-sm">
+            {% for i in range(5) %}{% if i < review.rating %}★{% else %}<span class="text-stone-300">★</span>{% endif %}{% endfor %}
+          </div>
+        </div>
+        {% if review.comment %}
+        <p class="text-stone-700 text-sm ml-10 leading-relaxed">{{ review.comment }}</p>
+        {% endif %}
+        <p class="text-xs text-stone-400 ml-10 mt-1">{{ review.created_at.strftime('%B %d, %Y') }}</p>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-stone-500 text-sm mb-6">No reviews yet. Be the first to review!</p>
+    {% endif %}
+
+    <!-- Write a review -->
+    {% if user %}
+    <div class="border-t border-stone-100 pt-5">
+      <h3 class="font-semibold text-stone-800 mb-3">{{ 'Update Your Review' if user_review else 'Write a Review' }}</h3>
+      <form action="/books/{{ book.id }}/review" method="post" class="space-y-3">
+        <div>
+          <label class="block text-sm font-medium text-stone-700 mb-1">Rating</label>
+          <div class="flex gap-1" id="star-rating">
+            {% for i in range(1, 6) %}
+            <label class="cursor-pointer">
+              <input type="radio" name="rating" value="{{ i }}" class="sr-only" {% if user_review and user_review.rating == i %}checked{% endif %} required />
+              <span class="text-3xl text-stone-300 hover:text-yellow-400 transition-colors star-btn" data-value="{{ i }}">★</span>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-stone-700 mb-1">Comment (optional)</label>
+          <textarea name="comment" rows="3" placeholder="Share your thoughts..." class="w-full px-4 py-3 border border-stone-300 rounded-xl text-sm focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200 resize-none">{{ user_review.comment if user_review else '' }}</textarea>
+        </div>
+        <button type="submit" class="px-5 py-2.5 bg-brand-700 text-white font-semibold rounded-lg hover:bg-brand-600 transition-colors text-sm">
+          {{ 'Update Review' if user_review else 'Submit Review' }}
+        </button>
+      </form>
+    </div>
+    {% else %}
+    <div class="border-t border-stone-100 pt-5 text-center">
+      <p class="text-stone-600 text-sm mb-3">Sign in to leave a review</p>
+      <a href="/auth/login?next=/books/{{ book.id }}" class="px-5 py-2.5 bg-brand-700 text-white font-semibold rounded-lg hover:bg-brand-600 transition-colors text-sm inline-block">Sign In</a>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Related Books -->
+  {% if related %}
+  <div>
+    <h2 class="font-serif text-2xl font-bold text-stone-900 mb-5">You Might Also Like</h2>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      {% for book in related %}
+      {% include "partials/book_card.html" %}
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+function changeQty(delta) {
+  const input = document.getElementById('qty-input');
+  const max = parseInt(input.max) || 99;
+  input.value = Math.max(1, Math.min(max, parseInt(input.value) + delta));
+}
+
+// Star rating interaction
+document.querySelectorAll('.star-btn').forEach((star, i, stars) => {
+  star.addEventListener('mouseover', () => {
+    stars.forEach((s, j) => s.classList.toggle('text-yellow-400', j <= i));
+    stars.forEach((s, j) => s.classList.toggle('text-stone-300', j > i));
+  });
+  star.addEventListener('click', () => {
+    const input = star.closest('label').querySelector('input');
+    input.checked = true;
+  });
+});
+document.getElementById('star-rating').addEventListener('mouseleave', () => {
+  const checked = document.querySelector('#star-rating input:checked');
+  const val = checked ? parseInt(checked.value) : 0;
+  document.querySelectorAll('.star-btn').forEach((s, i) => {
+    s.classList.toggle('text-yellow-400', i < val);
+    s.classList.toggle('text-stone-300', i >= val);
+  });
+});
+// Init star colors
+(function() {
+  const checked = document.querySelector('#star-rating input:checked');
+  const val = checked ? parseInt(checked.value) : 0;
+  document.querySelectorAll('.star-btn').forEach((s, i) => {
+    s.classList.toggle('text-yellow-400', i < val);
+    s.classList.toggle('text-stone-300', i >= val);
+  });
+})();
+</script>
+{% endblock %}

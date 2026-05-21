@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Shopping Cart — PageTurner{% endblock %}
+{% block content %}
+
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <h1 class="font-serif text-3xl font-bold text-stone-900 mb-8">Shopping Cart</h1>
+
+  {% if cart.items %}
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+    <!-- Cart items -->
+    <div class="lg:col-span-2 space-y-4">
+      {% for item in cart.items %}
+      <div class="bg-white rounded-xl border border-stone-200 p-4 flex items-center gap-4">
+        <a href="/books/{{ item.book.id }}" class="flex-shrink-0">
+          <img src="{{ item.book.cover_image or 'https://via.placeholder.com/80x110/d4882a/fff?text=Book' }}"
+               alt="{{ item.book.title }}"
+               class="w-16 h-22 object-cover rounded-lg shadow-sm"
+               onerror="this.src='https://via.placeholder.com/80x110/d4882a/fff?text=Book'" />
+        </a>
+        <div class="flex-1 min-w-0">
+          <a href="/books/{{ item.book.id }}" class="font-semibold text-stone-900 hover:text-brand-700 transition-colors line-clamp-2 text-sm leading-snug">{{ item.book.title }}</a>
+          <p class="text-xs text-stone-500 mt-0.5">by {{ item.book.author }}</p>
+          <p class="font-bold text-stone-900 mt-1">${{ "%.2f"|format(item.book.price) }}</p>
+        </div>
+        <div class="flex flex-col items-end gap-2">
+          <!-- Quantity control -->
+          <form action="/cart/update/{{ item.id }}" method="post" class="flex items-center border border-stone-300 rounded-lg overflow-hidden">
+            <button type="button" onclick="cartQty({{ item.id }}, -1)" class="px-3 py-1.5 text-stone-600 hover:bg-stone-100 transition-colors text-sm font-bold">−</button>
+            <input id="qty-{{ item.id }}" type="number" name="quantity" value="{{ item.quantity }}" min="0" max="{{ item.book.stock }}"
+                   class="w-12 text-center text-sm font-semibold border-0 focus:outline-none py-1.5" />
+            <button type="button" onclick="cartQty({{ item.id }}, 1, {{ item.book.stock }})" class="px-3 py-1.5 text-stone-600 hover:bg-stone-100 transition-colors text-sm font-bold">+</button>
+            <button type="submit" class="hidden" id="update-btn-{{ item.id }}"></button>
+          </form>
+          <p class="text-sm font-bold text-stone-800">${{ "%.2f"|format(item.book.price * item.quantity) }}</p>
+          <!-- Remove -->
+          <form action="/cart/remove/{{ item.id }}" method="post">
+            <button type="submit" class="text-xs text-red-500 hover:text-red-600 transition-colors flex items-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-3.5 h-3.5"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"/></svg>
+              Remove
+            </button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Summary -->
+    <div class="lg:col-span-1">
+      <div class="bg-white rounded-xl border border-stone-200 p-5 sticky top-24">
+        <h2 class="font-serif text-lg font-bold text-stone-900 mb-4">Order Summary</h2>
+        <div class="space-y-2 text-sm mb-4">
+          <div class="flex justify-between text-stone-600">
+            <span>Subtotal ({{ cart_count }} item{{ 's' if cart_count != 1 else '' }})</span>
+            <span>${{ "%.2f"|format(total) }}</span>
+          </div>
+          {% set shipping = 4.99 if total < 35 else 0 %}
+          <div class="flex justify-between text-stone-600">
+            <span>Shipping</span>
+            {% if shipping == 0 %}
+            <span class="text-green-600 font-medium">Free</span>
+            {% else %}
+            <span>${{ "%.2f"|format(shipping) }}</span>
+            {% endif %}
+          </div>
+          {% if total < 35 %}
+          <p class="text-xs text-stone-500 bg-amber-50 px-3 py-2 rounded-lg border border-amber-200">
+            Add <strong>${{ "%.2f"|format(35 - total) }}</strong> more for free shipping!
+          </p>
+          {% endif %}
+          <div class="border-t border-stone-200 pt-2 flex justify-between font-bold text-stone-900 text-base">
+            <span>Total</span>
+            <span>${{ "%.2f"|format(total + shipping) }}</span>
+          </div>
+        </div>
+        <a href="/orders/checkout" class="block w-full py-3.5 bg-brand-700 text-white text-center font-semibold rounded-xl hover:bg-brand-600 transition-all shadow-md">
+          Proceed to Checkout
+        </a>
+        <a href="/books" class="block w-full py-3 text-center text-sm text-stone-600 hover:text-brand-700 transition-colors mt-2">
+          Continue Shopping
+        </a>
+        <div class="mt-4 pt-4 border-t border-stone-100 flex items-center justify-center gap-2 text-xs text-stone-400">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-green-500"><path fill-rule="evenodd" d="M10 1a4.5 4.5 0 0 0-4.5 4.5V9H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-.5V5.5A4.5 4.5 0 0 0 10 1Zm3 8V5.5a3 3 0 1 0-6 0V9h6Z" clip-rule="evenodd"/></svg>
+          Secure checkout
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% else %}
+  <div class="text-center py-24">
+    <div class="text-7xl mb-5">🛒</div>
+    <h2 class="font-serif text-2xl font-bold text-stone-800 mb-3">Your cart is empty</h2>
+    <p class="text-stone-500 mb-8">Looks like you haven't added any books yet.</p>
+    <a href="/books" class="inline-block px-8 py-3.5 bg-brand-700 text-white font-semibold rounded-xl hover:bg-brand-600 transition-colors shadow-md">Explore Books</a>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+function cartQty(itemId, delta, maxStock) {
+  const input = document.getElementById('qty-' + itemId);
+  const newVal = Math.max(0, Math.min(maxStock || 999, parseInt(input.value) + delta));
+  input.value = newVal;
+  document.getElementById('update-btn-' + itemId).click();
+}
+</script>
+{% endblock %}

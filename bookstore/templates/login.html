@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Sign In — PageTurner{% endblock %}
+{% block content %}
+
+<div class="min-h-[70vh] flex items-center justify-center px-4 py-12">
+  <div class="w-full max-w-md">
+    <div class="text-center mb-8">
+      <div class="w-14 h-14 bg-brand-700 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" class="w-7 h-7">
+          <path d="M11.25 4.533A9.707 9.707 0 0 0 6 3a9.735 9.735 0 0 0-3.25.555.75.75 0 0 0-.5.707v14.25a.75.75 0 0 0 1 .707A8.237 8.237 0 0 1 6 18.75c1.995 0 3.823.707 5.25 1.886V4.533ZM12.75 20.636A8.214 8.214 0 0 1 18 18.75c.966 0 1.89.166 2.75.47a.75.75 0 0 0 1-.708V4.262a.75.75 0 0 0-.5-.707A9.735 9.735 0 0 0 18 3a9.707 9.707 0 0 0-5.25 1.533v16.103Z"/>
+        </svg>
+      </div>
+      <h1 class="font-serif text-3xl font-bold text-stone-900">Welcome back</h1>
+      <p class="text-stone-500 mt-2">Sign in to your PageTurner account</p>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-8">
+      {% if error %}
+      <div class="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm mb-5 flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 flex-shrink-0"><path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM8.28 7.22a.75.75 0 0 0-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 1 0 1.06 1.06L10 11.06l1.72 1.72a.75.75 0 1 0 1.06-1.06L11.06 10l1.72-1.72a.75.75 0 0 0-1.06-1.06L10 8.94 8.28 7.22Z" clip-rule="evenodd" /></svg>
+        {{ error }}
+      </div>
+      {% endif %}
+
+      <form action="/auth/login" method="post" class="space-y-5">
+        <div>
+          <label class="block text-sm font-medium text-stone-700 mb-1.5">Email address</label>
+          <input type="email" name="email" required autofocus placeholder="you@example.com"
+                 class="w-full px-4 py-3 border border-stone-300 rounded-xl text-sm focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200 transition-all" />
+        </div>
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="block text-sm font-medium text-stone-700">Password</label>
+            <a href="#" class="text-xs text-brand-700 hover:text-brand-500">Forgot password?</a>
+          </div>
+          <input type="password" name="password" required placeholder="••••••••"
+                 class="w-full px-4 py-3 border border-stone-300 rounded-xl text-sm focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200 transition-all" />
+        </div>
+        <button type="submit" class="w-full py-3.5 bg-brand-700 text-white font-semibold rounded-xl hover:bg-brand-600 transition-all shadow-md">
+          Sign In
+        </button>
+      </form>
+
+      <div class="mt-4 p-3 bg-stone-50 rounded-xl text-sm text-stone-600 border border-stone-200">
+        <strong>Demo account:</strong> demo@bookstore.com / demo1234
+      </div>
+
+      <p class="text-center text-sm text-stone-500 mt-5">
+        Don't have an account?
+        <a href="/auth/register" class="text-brand-700 font-semibold hover:text-brand-500">Create one free</a>
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

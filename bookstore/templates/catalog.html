@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}Browse Books — PageTurner{% endblock %}
+{% block content %}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="flex flex-col lg:flex-row gap-8">
+
+    <!-- Sidebar Filters -->
+    <aside class="lg:w-64 flex-shrink-0">
+      <div class="bg-white rounded-xl border border-stone-200 overflow-hidden sticky top-24">
+        <div class="bg-stone-50 px-5 py-4 border-b border-stone-200 flex items-center justify-between">
+          <h2 class="font-semibold text-stone-800">Filters</h2>
+          {% if selected_category or search or min_price or max_price %}
+          <a href="/books" class="text-xs text-red-500 hover:text-red-600 font-medium">Clear all</a>
+          {% endif %}
+        </div>
+
+        <form id="filter-form" action="/books" method="get" class="p-5 space-y-6">
+          {% if search %}<input type="hidden" name="search" value="{{ search }}" />{% endif %}
+
+          <!-- Categories -->
+          <div>
+            <h3 class="text-sm font-semibold text-stone-700 mb-3">Category</h3>
+            <div class="space-y-2">
+              <label class="flex items-center gap-2 cursor-pointer group">
+                <input type="radio" name="category" value="" {% if not selected_category %}checked{% endif %} class="text-brand-600 focus:ring-brand-500" onchange="this.form.submit()" />
+                <span class="text-sm text-stone-600 group-hover:text-stone-900">All Categories</span>
+              </label>
+              {% for cat in categories %}
+              <label class="flex items-center gap-2 cursor-pointer group">
+                <input type="radio" name="category" value="{{ cat.slug }}" {% if selected_category == cat.slug %}checked{% endif %} class="text-brand-600 focus:ring-brand-500" onchange="this.form.submit()" />
+                <span class="text-sm text-stone-600 group-hover:text-stone-900">{{ cat.name }}</span>
+              </label>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- Price Range -->
+          <div>
+            <h3 class="text-sm font-semibold text-stone-700 mb-3">Price Range</h3>
+            <div class="flex items-center gap-2">
+              <input type="number" name="min_price" placeholder="Min" value="{{ min_price or '' }}" step="0.01" min="0"
+                     class="w-full px-3 py-2 text-sm border border-stone-300 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-300" />
+              <span class="text-stone-400">–</span>
+              <input type="number" name="max_price" placeholder="Max" value="{{ max_price or '' }}" step="0.01" min="0"
+                     class="w-full px-3 py-2 text-sm border border-stone-300 rounded-lg focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-300" />
+            </div>
+            <button type="submit" class="mt-2 w-full py-2 text-sm font-medium bg-brand-700 text-white rounded-lg hover:bg-brand-600 transition-colors">Apply</button>
+          </div>
+
+          <input type="hidden" name="sort" value="{{ sort }}" />
+        </form>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <div class="flex-1 min-w-0">
+      <!-- Header row -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+        <div>
+          <h1 class="font-serif text-2xl font-bold text-stone-900">
+            {% if selected_category %}
+              {% for cat in categories %}{% if cat.slug == selected_category %}{{ cat.name }}{% endif %}{% endfor %}
+            {% elif search %}
+              Results for "{{ search }}"
+            {% else %}
+              All Books
+            {% endif %}
+          </h1>
+          <p class="text-stone-500 text-sm mt-0.5">{{ total }} book{{ 's' if total != 1 else '' }} found</p>
+        </div>
+
+        <!-- Sort -->
+        <form action="/books" method="get" class="flex items-center gap-2">
+          {% if search %}<input type="hidden" name="search" value="{{ search }}" />{% endif %}
+          {% if selected_category %}<input type="hidden" name="category" value="{{ selected_category }}" />{% endif %}
+          {% if min_price %}<input type="hidden" name="min_price" value="{{ min_price }}" />{% endif %}
+          {% if max_price %}<input type="hidden" name="max_price" value="{{ max_price }}" />{% endif %}
+          <label class="text-sm text-stone-600 whitespace-nowrap">Sort by:</label>
+          <select name="sort" onchange="this.form.submit()" class="text-sm border border-stone-300 rounded-lg px-3 py-2 focus:outline-none focus:border-brand-500 bg-white">
+            <option value="featured" {% if sort == 'featured' %}selected{% endif %}>Featured</option>
+            <option value="rating" {% if sort == 'rating' %}selected{% endif %}>Top Rated</option>
+            <option value="newest" {% if sort == 'newest' %}selected{% endif %}>Newest</option>
+            <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
+            <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
+            <option value="title" {% if sort == 'title' %}selected{% endif %}>Title A–Z</option>
+          </select>
+        </form>
+      </div>
+
+      {% if books %}
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        {% for book in books %}
+        {% include "partials/book_card.html" %}
+        {% endfor %}
+      </div>
+
+      <!-- Pagination -->
+      {% if total_pages > 1 %}
+      <div class="flex items-center justify-center gap-1 mt-10">
+        {% if page > 1 %}
+        <a href="?page={{ page - 1 }}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if search %}&search={{ search }}{% endif %}&sort={{ sort }}" class="px-3 py-2 text-sm text-stone-600 hover:bg-stone-100 rounded-lg transition-colors">
+          ← Prev
+        </a>
+        {% endif %}
+        {% for p in range(1, total_pages + 1) %}
+          {% if p == page %}
+          <span class="px-4 py-2 text-sm font-semibold bg-brand-700 text-white rounded-lg">{{ p }}</span>
+          {% elif p == 1 or p == total_pages or (p >= page - 2 and p <= page + 2) %}
+          <a href="?page={{ p }}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if search %}&search={{ search }}{% endif %}&sort={{ sort }}" class="px-4 py-2 text-sm text-stone-600 hover:bg-stone-100 rounded-lg transition-colors">{{ p }}</a>
+          {% elif p == page - 3 or p == page + 3 %}
+          <span class="px-2 text-stone-400">…</span>
+          {% endif %}
+        {% endfor %}
+        {% if page < total_pages %}
+        <a href="?page={{ page + 1 }}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if search %}&search={{ search }}{% endif %}&sort={{ sort }}" class="px-3 py-2 text-sm text-stone-600 hover:bg-stone-100 rounded-lg transition-colors">
+          Next →
+        </a>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      {% else %}
+      <div class="text-center py-20">
+        <div class="text-6xl mb-4">📚</div>
+        <h3 class="font-serif text-xl font-semibold text-stone-800 mb-2">No books found</h3>
+        <p class="text-stone-500 mb-6">Try adjusting your filters or search terms.</p>
+        <a href="/books" class="px-5 py-2.5 bg-brand-700 text-white rounded-lg hover:bg-brand-600 transition-colors font-medium">Browse All Books</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
