@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# Deploy portfolio-site/ to https://vvvvvvizard.github.io/
+set -euo pipefail
+
+REPO="vvvvvvizard/vvvvvvizard.github.io"
+DEPLOY_DIR="$(cd "$(dirname "$0")" && pwd)"
+WORKDIR="${TMPDIR:-/tmp}/vvvvvvizard.github.io-deploy"
+
+echo "→ Cloning $REPO ..."
+rm -rf "$WORKDIR"
+gh repo clone "$REPO" "$WORKDIR"
+cd "$WORKDIR"
+
+echo "→ Replacing site files ..."
+find . -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
+cp -r "$DEPLOY_DIR/index.html" "$DEPLOY_DIR/css" "$DEPLOY_DIR/js" .
+
+git add -A
+if git diff --cached --quiet; then
+  echo "Nothing to deploy."
+  exit 0
+fi
+
+git commit -m "Deploy portfolio site"
+git push origin main
+
+echo ""
+echo "Live at: https://vvvvvvizard.github.io/"
+echo "(GitHub Pages may take 1–2 minutes to update)"
