@@ -6,6 +6,13 @@ REPO="vvvvvvizard/vvvvvvizard.github.io"
 DEPLOY_DIR="$(cd "$(dirname "$0")" && pwd)"
 WORKDIR="${TMPDIR:-/tmp}/vvvvvvizard.github.io-deploy"
 
+echo "→ Syncing resume from Google Docs (if available) ..."
+if python3 "$DEPLOY_DIR/sync_resume.py"; then
+  python3 "$DEPLOY_DIR/update_portfolio.py"
+else
+  echo "  Resume sync skipped — using existing portfolio content."
+fi
+
 echo "→ Cloning $REPO ..."
 rm -rf "$WORKDIR"
 gh repo clone "$REPO" "$WORKDIR"
