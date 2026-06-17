@@ -417,6 +417,34 @@ main {
   color: var(--muted);
 }
 
+.credential-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+}
+
+.credential-figure {
+  margin: 0;
+}
+
+.credential-image {
+  display: block;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.credential-figure figcaption {
+  margin-top: 0.85rem;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
 .contact-card {
   text-align: center;
   padding: 3rem 2rem;

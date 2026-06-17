@@ -185,6 +185,24 @@ def main() -> int:
         count=1,
     )
 
+    assets = load_json(ROOT / "content" / "assets.json")
+    degree = assets.get("degree")
+    if degree:
+        image_path = degree["path"]
+        image_alt = degree.get("alt", "Degree certificate")
+        index = re.sub(
+            r'(<img\s+src=")([^"]*)(" alt=")[^"]*(" class="credential-image")',
+            rf'\1{esc(image_path)}\3{esc(image_alt)}\4',
+            index,
+            count=1,
+        )
+        index = re.sub(
+            r'(<a href=")(images/degree\.jpg)(" target="_blank" rel="noopener noreferrer">\s*<img)',
+            rf'\1{esc(image_path)}\2',
+            index,
+            count=1,
+        )
+
     INDEX_PATH.write_text(index, encoding="utf-8")
     print(f"Updated {INDEX_PATH}")
     return 0
