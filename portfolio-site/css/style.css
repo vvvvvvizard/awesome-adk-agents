@@ -455,6 +455,87 @@ main {
   font-size: 0.9rem;
 }
 
+.education-grid {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (min-width: 700px) {
+  .education-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.education-item {
+  padding: 1.25rem 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.education-item h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+}
+
+.education-org {
+  margin: 0 0 0.75rem;
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.education-highlights {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.cert-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.cert-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.cert-card-ibm {
+  background: linear-gradient(135deg, rgba(255, 120, 140, 0.08), rgba(255, 180, 190, 0.04)), var(--surface);
+  border-color: rgba(255, 140, 160, 0.25);
+}
+
+.cert-badge-icon {
+  font-size: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+.cert-card h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+}
+
+.cert-issuer {
+  margin: 0 0 0.75rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.cert-card-list ul {
+  margin: 0.5rem 0 0;
+  padding-left: 1.1rem;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
 .contact-card {
   text-align: center;
   padding: 3rem 2rem;
