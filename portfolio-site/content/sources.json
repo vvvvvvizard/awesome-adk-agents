@@ -10,8 +10,18 @@
       "id": "1jDSyvWqxgagndXWHXD4vn7V8nk0QpPNm",
       "label": "BSc Hons Data Science degree",
       "type": "google_drive_file",
-      "output": "images/degree",
+      "media_type": "pdf",
+      "output": "assets/degree",
       "alt": "BSc Honours Data Science degree certificate"
+    },
+    "degree_image": {
+      "id": "",
+      "label": "BSc Hons Data Science degree (image)",
+      "type": "google_drive_file",
+      "media_type": "image",
+      "output": "assets/degree",
+      "alt": "BSc Honours Data Science degree certificate",
+      "optional": true
     }
   }
 }

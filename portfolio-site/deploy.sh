@@ -7,7 +7,11 @@ DEPLOY_DIR="$(cd "$(dirname "$0")" && pwd)"
 WORKDIR="${TMPDIR:-/tmp}/vvvvvvizard.github.io-deploy"
 
 echo "→ Syncing assets from Google Drive (if available) ..."
-python3 "$DEPLOY_DIR/sync_assets.py" || echo "  Asset sync skipped — using existing images."
+if python3 "$DEPLOY_DIR/sync_assets.py"; then
+  python3 "$DEPLOY_DIR/update_portfolio.py" || true
+else
+  echo "  Asset sync skipped — using existing assets."
+fi
 
 echo "→ Syncing resume from Google Docs (if available) ..."
 if python3 "$DEPLOY_DIR/sync_resume.py"; then
@@ -24,6 +28,9 @@ cd "$WORKDIR"
 echo "→ Replacing site files ..."
 find . -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
 cp -r "$DEPLOY_DIR/index.html" "$DEPLOY_DIR/css" "$DEPLOY_DIR/js" .
+if [ -d "$DEPLOY_DIR/assets" ] && [ "$(ls -A "$DEPLOY_DIR/assets" 2>/dev/null)" ]; then
+  cp -r "$DEPLOY_DIR/assets" .
+fi
 if [ -d "$DEPLOY_DIR/images" ] && [ "$(ls -A "$DEPLOY_DIR/images" 2>/dev/null)" ]; then
   cp -r "$DEPLOY_DIR/images" .
 fi

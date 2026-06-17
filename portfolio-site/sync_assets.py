@@ -78,9 +78,13 @@ def main() -> int:
         return 0
 
     IMAGES_DIR.mkdir(parents=True, exist_ok=True)
+    (ROOT / "assets").mkdir(parents=True, exist_ok=True)
     manifest = {}
 
     for key, asset in assets.items():
+        if asset.get("optional") and not asset.get("id"):
+            print(f"Skipping optional asset '{key}' (no id yet).")
+            continue
         file_id = asset["id"]
         output_base = ROOT / asset.get("output", f"images/{key}")
         output_base.parent.mkdir(parents=True, exist_ok=True)

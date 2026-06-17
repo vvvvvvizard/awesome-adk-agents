@@ -24,6 +24,49 @@ def esc(value: str) -> str:
     return html.escape(value or "", quote=True)
 
 
+def render_degree_credential(degree_asset: dict, drive_id: str) -> str:
+    path = degree_asset["path"]
+    alt = esc(degree_asset.get("alt", "Degree certificate"))
+
+    if path.lower().endswith(".pdf"):
+        return f"""          <object
+            data="{esc(path)}"
+            type="application/pdf"
+            class="credential-pdf"
+            aria-label="{alt}"
+          >
+            <a class="btn btn-primary" href="{esc(path)}" target="_blank" rel="noopener noreferrer">Open degree certificate (PDF)</a>
+          </object>"""
+
+    return f"""          <a href="{esc(path)}" target="_blank" rel="noopener noreferrer">
+            <img src="{esc(path)}" alt="{alt}" class="credential-image" loading="lazy" width="800" height="600">
+          </a>"""
+
+
+def update_degree_section(index: str, sources: dict) -> str:
+    assets = load_json(ROOT / "content" / "assets.json")
+    degree = assets.get("degree_image") or assets.get("degree")
+    if not degree:
+        return index
+
+    drive_id = sources.get("assets", {}).get("degree", {}).get("id", "")
+    viewer_html = render_degree_credential(degree, drive_id)
+    drive_link = (
+        f'<a href="{esc(f"https://drive.google.com/file/d/{drive_id}/view")}" '
+        'target="_blank" rel="noopener noreferrer">View on Google Drive</a>'
+        if drive_id else ""
+    )
+
+    block = f"""        <div class="credential-viewer" id="degree-credential">
+{viewer_html}
+        </div>
+        <p class="credential-caption">
+          BSc Honours Data Science · {drive_link}
+        </p>"""
+
+    return replace_block(index, "<!-- DEGREE_CREDENTIAL_START -->", "<!-- DEGREE_CREDENTIAL_END -->", block)
+
+
 def badge_for_org(org: str) -> str:
     org_lower = org.lower()
     if any(word in org_lower for word in ("bank", "fnb", "absa")):
@@ -185,23 +228,8 @@ def main() -> int:
         count=1,
     )
 
-    assets = load_json(ROOT / "content" / "assets.json")
-    degree = assets.get("degree")
-    if degree:
-        image_path = degree["path"]
-        image_alt = degree.get("alt", "Degree certificate")
-        index = re.sub(
-            r'(<img\s+src=")([^"]*)(" alt=")[^"]*(" class="credential-image")',
-            rf'\1{esc(image_path)}\3{esc(image_alt)}\4',
-            index,
-            count=1,
-        )
-        index = re.sub(
-            r'(<a href=")(images/degree\.jpg)(" target="_blank" rel="noopener noreferrer">\s*<img)',
-            rf'\1{esc(image_path)}\2',
-            index,
-            count=1,
-        )
+    sources = load_json(SOURCES_PATH)
+    index = update_degree_section(index, sources)
 
     INDEX_PATH.write_text(index, encoding="utf-8")
     print(f"Updated {INDEX_PATH}")
