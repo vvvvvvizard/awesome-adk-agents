@@ -46,7 +46,6 @@ config.local.py
 
 changelog.md
 
-.github/
 .cursor/
 
 examples/
