@@ -35,6 +35,12 @@ def main() -> int:
             print(f"Updated resume → {target}")
             continue
 
+        if "profile" in lowered and path.suffix.lower() in {".jpg", ".jpeg", ".png", ".webp"}:
+            target = ROOT / "assets" / "profile.jpg"
+            shutil.copy2(path, target)
+            print(f"Updated profile photo → {target}")
+            continue
+
         target = CERTS / path.name.replace(" ", "-").lower()
         shutil.copy2(path, target)
         print(f"Copied → {target}")

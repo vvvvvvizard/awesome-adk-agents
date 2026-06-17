@@ -28,6 +28,9 @@ cd "$WORKDIR"
 echo "→ Replacing site files ..."
 find . -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
 cp -r "$DEPLOY_DIR/index.html" "$DEPLOY_DIR/css" "$DEPLOY_DIR/js" .
+if [ -f "$DEPLOY_DIR/CNAME" ]; then
+  cp "$DEPLOY_DIR/CNAME" .
+fi
 if [ -d "$DEPLOY_DIR/assets" ] && [ "$(ls -A "$DEPLOY_DIR/assets" 2>/dev/null)" ]; then
   cp -r "$DEPLOY_DIR/assets" .
 fi

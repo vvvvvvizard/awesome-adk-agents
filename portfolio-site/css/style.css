@@ -113,10 +113,40 @@ main {
 }
 
 .hero {
-  padding: 5rem 0 4rem;
+  padding: 4rem 0 4rem;
 }
 
-.eyebrow {
+.hero-inner {
+  display: grid;
+  gap: 2.5rem;
+  align-items: center;
+}
+
+@media (min-width: 800px) {
+  .hero-inner {
+    grid-template-columns: 1fr 280px;
+    gap: 3rem;
+  }
+}
+
+.hero-photo-wrap {
+  justify-self: center;
+}
+
+.hero-photo {
+  display: block;
+  width: 100%;
+  max-width: 280px;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  object-position: center top;
+  border-radius: 20px;
+  border: 2px solid var(--border);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
+  background: var(--surface);
+}
+
+.hero-content .eyebrow {
   font-family: var(--mono);
   font-size: 0.8rem;
   letter-spacing: 0.08em;
@@ -125,7 +155,7 @@ main {
   margin: 0 0 1rem;
 }
 
-.hero h1 {
+.hero-content h1 {
   font-size: clamp(2.2rem, 5vw, 3.4rem);
   line-height: 1.15;
   font-weight: 700;
@@ -140,14 +170,14 @@ main {
   color: transparent;
 }
 
-.hero-lead {
+.hero-content .hero-lead {
   font-size: 1.15rem;
   color: var(--muted);
   max-width: 38rem;
   margin: 0 0 2rem;
 }
 
-.hero-actions {
+.hero-content .hero-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
